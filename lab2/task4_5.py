@@ -3,21 +3,18 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
 from sklearn.model_selection import train_test_split
 
-df_train = pd.read_csv('lab1/train_processed.csv')
-df_test = pd.read_csv('lab1/test_processed.csv')
+df = pd.read_csv("lab1/winequality_processed.csv")
 
-df_train.drop('Name', axis=1, inplace=True)
-df_train.drop('Ticket', axis=1, inplace=True)
+print(f"Size {df.head()}"
+      f"\n Columns: \n{df.columns}")
 
-df_test.drop('Name', axis=1, inplace=True)
-df_test.drop('Ticket', axis=1, inplace=True)
+X_clf = df.drop(["quality","quality_category_high"], axis=1)
+y_reg = df["quality_category_high"]
 
-y = df_train['Survived']
-X = df_train.drop('Survived', axis=1)
+X_train, X_val, y_train, y_val = train_test_split(
+    X_clf, y_reg, test_size=0.2, random_state=42
+)
 
-df_test = df_test.drop('Survived', axis=1)
-
-X_train, X_val, y_train, y_val = train_test_split(X,y,test_size=0.2, random_state=42, stratify=y)
 
 logreg = LogisticRegression()
 
@@ -26,14 +23,5 @@ y_pred = logreg.predict(X_val)
 
 print("=== Logistic Regression ===")
 print("Accuracy:", accuracy_score(y_val, y_pred))
-print(classification_report(y_val, y_pred, target_names=["Not Survived", "Survived"]))
+print(classification_report(y_val, y_pred, target_names=["Low", "High"]))
 print("Confusion matrix:\n", confusion_matrix(y_val, y_pred))
-
-pred_test = logreg.predict(df_test)
-
-df_result = pd.DataFrame({
-    'PassengerId': df_test['PassengerId'],
-    'Survived': pred_test
-})
-
-df_result.to_csv('lab2/result.csv', index=False)

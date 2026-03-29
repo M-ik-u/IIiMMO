@@ -1,36 +1,25 @@
 from sklearn.linear_model import LinearRegression, Lasso, Ridge, ElasticNet
-
 import numpy as np
 import pandas as pd
 from sklearn.metrics import mean_squared_error, mean_absolute_error
+from sklearn.model_selection import train_test_split
 
+df = pd.read_csv("lab1/winequality_processed.csv")
 
-df_train = pd.read_csv("lab1/train_processed.csv")
-df_test = pd.read_csv("lab1/test_processed.csv")
+print(f"Size {df.head()}"
+      f"\n Columns: \n{df.columns}")
 
-'''
-ValueError: could not convert string to float: 'Partner, Mr. Austen'
-возникла такая ошибка, поэтому дропаем из фрейма Name and Ticket
-так как они нам  не нужны и, прогуглив, выснил, что при применении
-к подобным данным OHE будет переобучение т.к создаться много-много столбцов
-'''
+X_reg = df.drop(["alcohol", "quality"], axis=1)
+y_reg = df["alcohol"]
 
-df_train.drop('Name', axis=1, inplace=True)
-df_train.drop('Ticket', axis=1, inplace=True)
-
-df_test.drop('Name', axis=1, inplace=True)
-df_test.drop('Ticket', axis=1, inplace=True)
-
-X_reg_train = df_train.drop(['Age','Survived'], axis=1)
-y_reg_train = df_train['Age']
-
-X_reg_test = df_test.drop(['Age','Survived'], axis=1)
-y_reg_test = df_test['Age']
-
+X_reg_train, X_reg_test,y_reg_train,y_reg_test = train_test_split(
+    X_reg, y_reg, test_size=0.2, random_state=42
+)
 
 lin_reg = LinearRegression()
 lin_reg.fit(X_reg_train, y_reg_train)
 y_reg_predict = lin_reg.predict(X_reg_test)
+
 
 mse = mean_squared_error(y_reg_test, y_reg_predict)
 rmse = np.sqrt(mse)
@@ -91,23 +80,3 @@ print(f"{'MSE':<15} {mse:<15.6f} {mse_lasso:<15.6f} {mse_ridge:<15.6f} {mse_elas
 print(f"{'RMSE':<15} {rmse:<15.6f} {rmse_lasso:<15.6f} {rmse_ridge:<15.6f} {rmse_elastic:<15.6f}")
 print(f"{'MAE':<15} {mae:<15.6f} {mae_lasso:<15.6f} {mae_ridge:<15.6f} {mae_elastic:<15.6f}")
 print("="*80)
-
-"""
-Before changes and using test_proccesed
-================================================================================
-Metric          Linear          Lasso           Ridge           ElasticNet     
-================================================================================
-MSE             0.022037        0.026961        0.022053        0.026939       
-RMSE            0.148449        0.164199        0.148503        0.164130       
-MAE             0.112210        0.116949        0.112130        0.116771       
-================================================================================
-
-After:
-================================================================================
-Metric          Linear          Lasso           Ridge           ElasticNet     
-================================================================================
-MSE             0.020805        0.025433        0.020717        0.025482       
-RMSE            0.144240        0.159477        0.143934        0.159632       
-MAE             0.107045        0.117608        0.106894        0.119196       
-================================================================================
-"""
